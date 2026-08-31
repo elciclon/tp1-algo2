@@ -1,0 +1,16 @@
+crearSistema - usuarios, categorias 
+registrarUsuario - usuarios(millas totales, millas disponibles)
+registrarUsuarioConReferiddor - usuarios(millas totales, millas disponibles)
+acumularMillas - categoria, usuario(millas totales, millas disponibles)
+canjearMillas - usuario(millas disponibles, historial de transacciones(cantidad canjeada))
+transferirMillas - usuarios(millas totales, millas disponibles, historial de transacciones(cantidad de canjeadas, usuario de transferencia))
+consultarSaldo - usuarios(millas disponibles)
+consultarCategoria - categoria, usuario(millas totales)
+rankingMillas - usuarios(idd, millas totales)
+resumenTransacciones - usuario(historial de transcciones)
+iniciarPromocion - ????
+iniciarPromocionConTope - ^
+finalizarPromocion - xdd
+elQueTieneMasMillas - usuarios(id, millas totales)
+elMasCanjeador - usuarios(id,historial de transacciones(cantidad canjeada, cantidad transferida)
+paresTransferidosExclusivos - usuarios(historial de transacciones(usuario de transferencia))

@@ -37,15 +37,16 @@
 
 \maketitle
 
-\noindent enum Categoría ES \{Bronce, Plata, Oro, Platino\}\\[1em]
-Data ES struct $\struct {x:\R, y:\R}$\\
-Usuario ES struct $\struct {id:\Z, data: \Tipo{Data}}$\\
+\noindent enum Categoria ES \{Bronce, Plata, Oro, Platino\}\\[1em]
+Data ES struct $\struct {millasTotales:\R, millasDisponibles:\R, transacciones: ?}$\\
+Usuario ES struct $\struct {\dict{id:\Z}{data: \Tipo{Data}}, categoria: \Tipo{Categoria}}$\\
 Nombre ES struct $\struct {nombre:\str}$\\
+Promo ES struct $\struct {\dict{nombre:\str}{factor: \R}}$\\
 
-\begin{tad}{AirMiles dicc $\tupla{\Tipo{Usuario.id}, \Tipo{Usuario.data}}$}
+\begin{tad}{AirMiles $\tupla{\Tipo{Usuario}}$}
 
 
-\obs{usuarios}{\dict{\Tipo{Usuario.id}}{\Tipo{Usuario.data}}}
+\obs{usuarios}{\seq{\Tipo{Usuario}}}
 \\
 \obs{promo}{\Tipo{Promo}}
 \\
@@ -57,8 +58,14 @@ Nombre ES struct $\struct {nombre:\str}$\\
 \Tipo{AirMiles}
 }
     \requiere{true}
-    \aseguraLargo{ res.usuarios = \Tipo{dicc}\tupla{}}
+    \aseguraLargo{ res.usuarios = \Tipo{\seq} \land res.Promo.nombre = ‘NoPromo’ \land res.Promo.factor = 1}
     
+\end{proc}
+
+\begin{proc}{registrarUsuario}
+	{\Inout usuarios: \seq{\Tipo{Usuario}}}{}
+	\requiere{usuarios0 = usuarios}
+	\aseguraLargo{res.usuarios = \land res.Promo.nombre = \land res.Promo.factor = }
 \end{proc}
 
 
