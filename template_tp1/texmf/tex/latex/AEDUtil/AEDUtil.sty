@@ -4,9 +4,11 @@
 
 % Estoy seguro de que hay alguna forma de definir algo tipo \newmathcommand pero 
 % claramente es mas complicado de lo que parece y no me gusta tanto latex
-\newcommand{\RequireMathMode}[2]{
-    \ifmmode #2 \else
-    \PackageError{AED}{No se puede usar #1 afuera del modo matematico}{}
+\DeclareRobustCommand{\RequireMathMode}[2]{%
+    \ifmmode
+		#2%
+	\else
+		\PackageError{AED}{No se puede usar #1 afuera del modo matematico}{}%
     \fi
 }
 
@@ -22,7 +24,7 @@
 
 
 % Cuidado con este renew de aca abajo, pisa el simbolo de congruencia creo
-\renewcommand{\mod}{\RequireMathMode{mod}{\text{mód }}}
+%\newcommand{\mod}{\RequireMathMode{mod}{\text{mód }}}
 
 % Comando para indentar cosas
 \newcommand{\tab}{\hspace*{2em}}
@@ -30,3 +32,10 @@
 % Por ahora dejo esto aca para poder compilar todo pero despues hay que ver bien en donde
 % deberiamos meterlo. Revisar.
 \newcommand{\hoare}[3]{\{$#1$\}\text{\textbf{ #2 }}\{$#3$\}}
+
+
+\newcommand{\comentario}[1]{\emph{\color{teal}{-- #1}}}
+
+\newcommand{\literal}[1]{\RequireMathMode{literal}{\langle #1 \rangle}}
+
+\newcommand{\corregido}[1]{\textcolor{red}{#1}}

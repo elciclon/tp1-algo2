@@ -5,10 +5,28 @@
 \RequirePackage{AEDEspecificacion}
 \RequirePackage{AEDUtil}    % RequireMathMode
 \RequirePackage{changepage} % Para indentar, adjustwidth depende de esto
+\RequirePackage{xstring}
 
 % \obs{Nombre}{Tipo}
-\newcommand{\obs}[2]{\texttt{obs} #1 $: #2$}
+\newcommand{\obs}[2]{\noindent\texttt{obs} #1 $: #2$}
 
+%\igualdad{Tipo}{Cuerpo}
+\newcommand{\igualdad}[2]{
+	\StrChar{#1}{1}[\inicialTipo]
+
+	\begin{proc}{igualdad}{\In \inicialTipo_1: #1, \In \inicialTipo_2: #1}{\bool}
+		\aseguraCorto{res = \textsf{true} \sii #2}
+	\end{proc}
+}
+
+%\igualdad{TipoParamétrico}{Parámetro}{Cuerpo}
+\newcommand{\igualdadParam}[3]{
+	\StrChar{#1}{1}[\inicialTipo]
+
+	\begin{proc}{igualdad}{\In \inicialTipo_1: \TipoParam{#1}{#2}, \In \inicialTipo_2: \TipoParam{#1}{#2}}{\bool}
+		\asegura{res = \textsf{true} \sii #3}
+	\end{proc}
+}
 % \begin{tad}{Nombre}
 % Si es un tad parametrico, meter eso directo en el nombre
 \newenvironment{tad}[1]{
@@ -22,5 +40,7 @@
 
 
 % Algunos TADs comunes
+\newcommand{\Secuencia}[1]{\RequireMathMode{Secuencia}{\TipoParam{Secuencia}{#1}}}
 \newcommand{\Diccionario}[2]{\RequireMathMode{Diccionario}{\TipoParamDos{Diccionario}{#1}{#2}}}
-\newcommand{\Conjunto}[1]{\RequireMathMode{Conjunto}{\TipoParam{Diccionario}{#1}}}
+\newcommand{\Conjunto}[1]{\RequireMathMode{Conjunto}{\TipoParam{Conjunto}{#1}}}
+

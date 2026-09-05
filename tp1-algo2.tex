@@ -6,15 +6,15 @@
 \usepackage{caratula}
 
 
-\titulo{Trabajo práctico}
-\subtitulo{El subtitulo adecuado}
+\titulo{Trabajo práctico 1}
+\subtitulo{AED2}
 
 \fecha{\today}
 
 \materia{Algoritmos y Estructuras de Datos}
 \grupo{laJavaneta} 
 
-\integrante{Tami}{/}{@}
+\integrante{Tamara Argañaraz}{/}{tamaradiana.ar@gmail.com}
 \integrante{Fran}{/}{@}
 \integrante{Marti}{/}{@}
 \integrante{Fernández Fazio, Adrián Patricio}{938/24}{adrianfernandezfazio@gmail.com}
@@ -34,44 +34,113 @@
 
 
 \begin{document}
-
-\maketitle
-
-\noindent enum Categoria ES \{Bronce, Plata, Oro, Platino\}\\[1em]
-Data ES struct $\struct {millasTotales:\R, millasDisponibles:\R, transacciones: ?}$\\
-Usuario ES struct $\struct {\dict{id:\Z}{data: \Tipo{Data}}, categoria: \Tipo{Categoria}}$\\
-Nombre ES struct $\struct {nombre:\str}$\\
-Promo ES struct $\struct {\dict{nombre:\str}{factor: \R}}$\\
-
-\begin{tad}{AirMiles $\tupla{\Tipo{Usuario}}$}
-
-
-\obs{usuarios}{\seq{\Tipo{Usuario}}}
-\\
-\obs{promo}{\Tipo{Promo}}
-\\
-
-
-\begin{proc}{crearSistema}
-{
-}{
-\Tipo{AirMiles}
-}
-    \requiere{true}
-    \aseguraLargo{ res.usuarios = \Tipo{\seq} \land res.Promo.nombre = ‘NoPromo’ \land res.Promo.factor = 1}
-    
-\end{proc}
-
-\begin{proc}{registrarUsuario}
-	{\Inout usuarios: \seq{\Tipo{Usuario}}}{}
-	\requiere{usuarios0 = usuarios}
-	\aseguraLargo{res.usuarios = \land res.Promo.nombre = \land res.Promo.factor = }
-\end{proc}
-
-
-\end{tad}
-
-
-
-
+	
+	\maketitle
+	
+	\noindent enum Categoria ES \{Bronce, Plata, Oro, Platino\}\\[1em]
+	Vuelos ES $\seq{\R}$\\
+	Millas ES $\R$\\
+	Usuario ES $\Z$\\
+	MillasGanadas ES $\seq{\struct{\Tipo{Millas}, nombrePromo:\str, factorPromo: \R}}$\\
+	MillasCanjeadas ES $\seq{\Tipo{Millas}}$\\
+	MillasRecibidas ES $\seq{\struct{\Tipo{Usuario},\Tipo{Millas}}}$\\
+	MillasTransferidas ES $\seq{\struct{\Tipo{Usuario},\Tipo{Millas}}}$\\
+	Transacciones ES $\struct{\Tipo{Vuelos},\Tipo{MillasGanadas},\Tipo{MillasCanjeadas},\Tipo{MillasRecibidas},\Tipo{MillasTransferidas}}$\\
+	Usuarios ES $\dicc{\Tipo{Usuario}}{\Tipo{Transacciones}}$\\
+	Características ES $\struct{factor:\R, tope:\R}$\\
+	Promo ES $\dicc{nombre:\str}{factor: \R}$\\
+	PromoConTope ES $\struct{nombre:\str,\Tipo{Caracteristicas}}$\\
+	
+	\begin{tad}{AirMiles}
+		
+		
+		\obs{usuarios}{\Tipo{Usuarios}}
+		\\
+		\obs{promo}{\Tipo{Promo}}
+		\\
+		\obs{promoConTope}{\Tipo{PromoConTope}}
+		\\
+		
+		
+		\begin{proc}{crearSistema}
+			{
+			}{
+				\Tipo{AirMiles}
+			}
+			\requiereCorto{true}
+			\asegura{res.usuarios = \Tipo{\{\}} \land res.Promo[nombre] = \text{´NoPromo´} \land res.Promo[factor] = 1}
+			
+		\end{proc}
+		
+		\begin{proc}{registrarUsuario}
+			{\Inout aerolínea: \Tipo{AirMiles}, \In usuario:\Tipo{Usuario}}{}
+			\requiere{usuario \notin aerolínea.usuarios \land aerolínea = aerolínea0}
+			\asegura{\begin{aligned}
+					& |aerolínea.usuarios| = |aerolínea0.usuarios| + 1 \ \land\\
+					& aerolínea.usuarios = setKey(aerolínea0.usuarios, usuario,  \langle Vuelos:\vacio, MillasGanadas:\vacio,\\ 
+					& MillasCanjeadas:\vacio, MillasRecibidas:\vacio, MillasTransferidas:\vacio\rangle)\ \land \\
+					& aerolínea.promo = aerolínea0.promo \ \land \\
+					& aerolínea.promoConTope = aerolínea0.promoConTope
+					
+			\end{aligned}}
+		\end{proc}
+		
+		
+		
+		
+		\newpage
+		\begin{proc}{registrarUsuarioConReferidor}
+			{\begin{tabular}[t]{@{}l@{}}
+					{\Inout aerolínea: \Tipo{AirMiles},\\ \In usuario:\Tipo{Usuario},\\
+						\In referidor:\Tipo{Usuario}}{}
+			\end{tabular}}{}
+			\requiere{aerolínea = aerolínea0 \land usuario \notin aerolínea.usuarios \land referidor \in aerolínea.usuarios}
+			\asegura{\begin{aligned}                               
+					& |aerolínea.usuarios| = |aerolínea0.usuarios| + 1 \ \land\\
+					& aerolínea.usuarios = setKey(aerolínea0.usuarios, usuario,  \langle Vuelos:\vacio,\\
+					& MillasGanadas: \langle Millas: 500,\\  
+					& nombrePromo: aerolínea0.usuarios[referidor].MillasGanadas.nombrePromo, \\ 
+					& factorPromo: aerolinea0.usuarios[referidor].MillasGanadas.factorPromo \rangle \\ 
+					& MillasCanjeadas:\vacio, MillasRecibidas:\vacio, MillasTransferidas:\vacio\rangle\ \land \\
+					& aerolínea.usuarios = setKey(agregarUsuario(aerolínea0.usuarios, usuario),\\ 
+					& referidor, concat(aerolínea0.usuarios[referidor].MillasGanadas, \langle 500 \rangle))\ \land \\ 
+					& aerolínea.promo = aerolínea0.promo \ \land \\
+					& aerolínea.promoConTope = aerolínea0.promoConTope 
+			\end{aligned}}
+		\end{proc}
+		
+		\aux{agregarUsuario}{usuarios: \Tipo{Usuarios}, usuario: \Tipo{Usuario}}{Usuarios}
+		{
+			{\begin{aligned}   
+					& setKey(usuarios, usuario,  \langle Vuelos:\vacio, MillasGanadas:\vacio MillasCanjeadas:\vacio,\\          
+					& MillasRecibidas:\vacio, MillasTransferidas:\vacio\rangle)
+		\end{aligned}}}
+		
+		
+		\begin{proc}{acumularMillas}
+			{\begin{tabular}[t]{@{}l@{}}
+					{\Inout aerolínea: \Tipo{AirMiles},\\ \In usuario:\Tipo{Usuario},\\ \In distanciaVolada:\Tipo{Vuelo},\\
+						\In promo:\Tipo{Promo}}{}
+			\end{tabular}}{}
+			
+			\requiere{aerolínea = aerolínea0 \land usuario \in aerolínea.usuarios \land promo \in aerolínea.promo \land distanciaVolada > 0}
+			\asegura{\begin{aligned}                               
+					& aerolínea.usuarios = setKey(aerolínea0.usuarios, usuario, \\  
+					& \langle concat(aerolínea0.usuarios[usuario].Vuelos, distanciaVolada),\\
+					& concat(aerolínea0.usuarios[usuario].MillasGanadas,\\
+					& agregarMillasGanadas(aerolínea0.usuarios[usuario].MillasGanadas)),\\
+					& aerolíneas0.usuarios[usuario].MillasCanjeadas,\\  
+					& aerolíneas0.usuarios[usuario].MillasRecibidas,\\   & aerolíneas0.usuarios[usuario].MillasTransferidas\rangle
+					\ \land \\ 
+					& aerolínea.promo = aerolínea0.promo \ \land \\
+					& aerolínea.promoConTope = aerolínea0.promoConTope 
+			\end{aligned}}
+			
+		\end{proc}
+		
+	\end{tad}
+	
+	
+	
+	
 \end{document}
