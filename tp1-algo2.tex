@@ -46,7 +46,7 @@
 	MillasRecibidas ES $\seq{\struct{\Tipo{Usuario},\Tipo{Millas}}}$\\
 	MillasTransferidas ES $\seq{\struct{\Tipo{Usuario},\Tipo{Millas}}}$\\
 	Transacciones ES $\struct{\Tipo{Vuelos},\Tipo{MillasGanadas},\Tipo{MillasCanjeadas},\Tipo{MillasRecibidas},\Tipo{MillasTransferidas}}$\\
-	Usuarios ES $\dicc{\Tipo{Usuario}}{\Tipo{Transacciones}}$\\
+	Usuarios ES \dicc{\Tipo{Usuario}}{\Tipo{Transacciones}}\\
 	Características ES $\struct{factor:\R, tope:\R}$\\
 	Promo ES $\dicc{nombre:\str}{factor: \R}$\\
 	PromoConTope ES $\struct{nombre:\str,\Tipo{Caracteristicas}}$\\
