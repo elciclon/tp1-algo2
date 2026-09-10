@@ -47,14 +47,11 @@
 	MillasCanjeadas ES $\seq{\Tipo{Millas}}$\\
 	MillasRecibidas ES $\seq{\struct{transferidor: \Tipo{Usuario},millas:\Tipo{Millas}}}$\\
 	MillasTransferidas ES $\seq{\struct{receptor:\Tipo{Usuario},millas:\Tipo{Millas}}}$\\
-	MillasDisponiblesUsuario ES $\seq{\struct{usuario:\Tipo{Usuario},millas:\Tipo{Millas}}}$\\  
 	Transacciones ES $\struct{vuelos:\Tipo{Vuelos},millasGanadas:\Tipo{MillasGanadas},millasCanjeadas:\Tipo{MillasCanjeadas},millasRecibidas:\Tipo{MillasRecibidas},millasTransferidas:\Tipo{MillasTransferidas}}$\\
 	Usuarios ES $\dicc{usuario:\Tipo{Usuario}}{transacciones:\Tipo{Transacciones}}$\\
 	Características ES $\struct{factor:\R, tope:\R}$\\
-	Promo ES $\struct{nombre:\str,factor: \R}$\\
-	PromoConTope ES $\struct{nombre:\str,características:\Tipo{Caracteristicas}}$\\
-	Promos ES $\seq{Promo}$\\
-	PromosConTope ES $\seq{PromoConTope}$\\
+	Promos ES $\dicc{nombre: \str}{factor: \R}$\\
+	PromosConTope ES $\dicc{nombre: \str}{características: \Tipo{Características}}$\\
 	\\
 	\begin{tad}{AirMiles}
 		
@@ -78,7 +75,7 @@
 		\end{proc}
 		
 		\begin{proc}{registrarUsuario}
-			{\Inout aerolínea: \Tipo{AirMiles}, \In usuario:\Tipo{Usuario}}{}
+			{\Inout aerolínea: \Tipo{AirMiles}, \In usuario: \Tipo{Usuario}}{}
 			\requiere{usuario \notin aerolínea.usuarios \land aerolínea = aerolínea0}
 			\asegura{\begin{aligned}
 					% & |aerolínea.usuarios| = |aerolínea0.usuarios| + 1 \ \land\\
@@ -96,8 +93,8 @@
 		\newpage
 		\begin{proc}{registrarUsuarioConReferidor}
 			{\begin{tabular}[t]{@{}l@{}}
-					{\Inout aerolínea: \Tipo{AirMiles},\\ \In usuario:\Tipo{Usuario},\\
-						\In referidor:\Tipo{Usuario}}{}
+					{\Inout aerolínea : \Tipo{AirMiles},\\ \In usuario : \Tipo{Usuario},\\
+						\In referidor : \Tipo{Usuario}}{}
 			\end{tabular}}{}
 			\requiere{aerolínea = aerolínea0 \land usuario \notin aerolínea.usuarios \land referidor \in aerolínea.usuarios}
 			\asegura{\begin{aligned}                               
@@ -123,45 +120,60 @@
 			\end{aligned}}\\\\}
 		
 		
-		\begin{proc}{acumularMillas}
-			{\begin{tabular}[t]{@{}l@{}}
-					{\Inout aerolínea: \Tipo{AirMiles},\\ \In usuario:\Tipo{Usuario},\\ \In distanciaVolada:\Tipo{Vuelos},\\
-						\In promo:\Tipo{Promo}}{}
-			\end{tabular}}{}
-			
+		\begin{proc}{acumularMillas}{
+				\begin{tabular}[t]{@{}l@{}}
+					\Inout aerolínea : \Tipo{AirMiles}, \\
+					\In usuario : \Tipo{Usuario}, \\
+					\In distanciaVolada : \Tipo{Vuelos}, \\
+					\In promo : $\str$
+				\end{tabular}
+			}{}    
 			\requiere{\begin{tabular}[t]{@{}l@{}}
-					$aerolínea = aerolínea_0 \land usuario \in aerolínea.usuarios \land promo \in aerolínea.promos \ \land$ \\
+					$aerolínea = aerolínea_0 \land usuario \in aerolínea.usuarios \land (promo \in aerolínea0.promos\ $\lor \\
+					$promo \in aerolínea0.promosConTope) \ $\land$ \\
 					$distanciaVolada > 0$
 			\end{tabular}}
 			\asegura{\begin{aligned}                               
-					& aerolínea.usuarios = setKey(aerolínea0.usuarios, usuario, \\        
-					& \langle vuelos: concat(aerolínea0.usuarios[usuario].vuelos, \langle distanciaVolada\rangle),\\
-					& millasGanadas:concat(aerolínea0.usuarios[usuario].millasGanadas,\\
-					& \langle agregarMillasGanadas(aerolínea0.usuarios[usuario], distanciaVolada, promo)\rangle,\\
-					& millasCanjeadas:aerolíneas0.usuarios[usuario].millasCanjeadas,\\  
-					& millasRecibidas:aerolíneas0.usuarios[usuario].millasRecibidas,\\   
-					& millasTransferidas:aerolíneas0.usuarios[usuario].millasTransferidas\rangle)
+					& aerolínea.usuarios = agregarNuevaTransacción(aerolínea0.usuarios,usuario,\\
+					& distanciaVolada,promo,
+					\text{IfThenElse}(promo\in aerolínea0.promos,\\
+					& aerolínea0.promos[promo],
+					aerolínea0.promosConTope[promo].factor) 
 					\ \land \\ 
-					& aerolínea.promos = aerolínea0.promos \ \land \\
-					& aerolínea.promosConTope = aerolínea0.promosConTope 
+					& aerolínea.promosConTope = actualizarPromoConTope(promo,\\
+					& aerolínea.usuarios[usuario], aerolíneas.promosConTope)\ \land\\
+					& aerolíneas.promos = aerolíneas0.promos
 			\end{aligned}}
 			
 		\end{proc}
 		
-		\aux{agregarMillasGanadas}{distanciaVolada:\Tipo{Vuelos}, transacciones:\Tipo{Transacciones}, promo:\Tipo{Promo}}{MillasGanadas}{
-			{\begin{aligned}   
-					& \langle millas:calcularMillasAcumuladas(distanciaVolada,transacciones,promo),\\
-					& nombrePromo: promo.nombre, factorPromo: promo.factor\rangle
-			\end{aligned}}    
-			
+		\newpage
+		
+		\aux{agregarNuevaTransacción}{usuarios: \Tipo{Usuarios}, usuario: \Tipo{Usuario},distanciaVolada : \Tipo{Vuelos},promo : \str, factor: \R}{Usuarios}{
+			{\begin{aligned} 
+					& setKey(usuarios, usuario,\langle vuelos: concat(aerolínea0.usuarios[usuario].vuelos, \\
+					& \langle distanciaVolada\rangle),\\
+					& millasGanadas:concat(usuarios[usuario].millasGanadas,\\
+					& \langle agregarMillasGanadas(usuarios[usuario], distanciaVolada, promo)\rangle,\\
+					& millasCanjeadas:usuarios[usuario].millasCanjeadas,\\  
+					& millasRecibidas:usuarios[usuario].millasRecibidas,\\   
+					& millasTransferidas:usuarios[usuario].millasTransferidas\rangle)\\
+			\end{aligned}}
 		}
 		
-		\aux{calcularMillasAcumuladas}{distanciaVolada:\Tipo{Vuelos}, transacciones:\Tipo{Transacciones}, promo:\Tipo{Promo}}{\R}
+		\aux{agregarMillasGanadas}{distanciaVolada : \Tipo{Vuelos}, transacciones : \Tipo{Transacciones}, \\promo : \str, factor:\R}{MillasGanadas}{
+			{\begin{aligned}   
+					& \langle millas:calcularMillasAcumuladas(distanciaVolada,transacciones,factor),\\
+					& nombrePromo: promo, factorPromo: factor\rangle
+			\end{aligned}}    
+		}
+		
+		\aux{calcularMillasAcumuladas}{distanciaVolada : \Tipo{Vuelos}, transacciones : \Tipo{Transacciones},\\ factor : \R}{\R}
 		{\begin{aligned}   
-				& distanciaVolada * factorCategoria(transacciones) * promo.factor
+				& distanciaVolada * factorCategoria(transacciones) * factor
 		\end{aligned}}
 		
-		\aux{factorCategoría}{transacciones: \Tipo{Transacciones}}{\R}{
+		\aux{factorCategoría}{transacciones : \Tipo{Transacciones}}{\R}{
 			\begin{aligned}
 				&\text{IfThenElse}(esBronce(millasTotales(transacciones)), 1, \\
 				& \quad\text{IfThenElseFi}(esPlata(millasTotales(transacciones)), 1.5, \\
@@ -179,16 +191,53 @@
 		{50000\leq millasTotales<1000000}
 		
 		
-		\begin{proc}{canjearMillas}
-			{\Inout airMiles, \In id: \Z, \In millasACanjear: \R}{}
-			\requiere{(id \in usuarios[n]) \land millasACanjear > 0 \land usuarios0=usuarios \land promo0=promo}
-			\aseguraLargo{
-				airMiles.usuarios[id]++[("millasCanjeadas",millasACanjear)] \land 
-				(\forall n: \Z)((0 \leq n < |airMiles.usuarios0[id]|)\implies{\text{L}} airMiles.usuarios[id][n] = airMiles.usuarios0[id][n])\land
-				promo=promo0 \land
-				(\forall i: \Z)(((i \in airMiles.usuarios) \land (i \neq id)) \implies{\text{L}} airMiles.usuarios[i] = airMiles.usuarios0[i])
-			}
-		\end{tad}
+		
+		\begin{proc}{transferirMillas}
+			{\begin{tabular}[t]{@{}l@{}}
+					{\Inout aerolínea : airMiles, \In usuarioTransferidor : \Tipo{Usuario},\\ \In usuarioReceptor : \Tipo{Usuario}, 
+						\In millasATransferir : \Tipo{Millas}}{}
+			\end{tabular}}{}
+			\requiere{\begin{tabular}[t]{@{}l@{}}
+					$aerolínea = aerolínea_0 \land usuarioTransferidor \in aerolínea.usuarios \ \land $ \\ 
+					$usuarioReceptor \in aerolínea.usuarios \ \land $ \\
+					$millasATransferir \leq millasDisponibles(aerolínea0.usuarios[usuarioTransferidor])
+			\end{tabular}}
+			\asegura{\begin{aligned}                               
+					& aerolínea.usuarios = setKey(agregarTransferenciaRecibida(aerolínea0.usuarios, \\
+					& usuarioTransferidor, usuarioReceptor, millasATransferir),  \\
+					& usuarioTransferidor, \langle vuelos: aerolínea0.usuarios[usuarioReceptor].vuelos, \\
+					& millasGanadas: aerolínea0.usuarios[usuarioTransferidor].millasGanadas, \\
+					& millasCanjeadas: aerolínea0.usuarios[usuarioTransferidor].millasCanjeadas, \\
+					& millasRecibidas:aerolíneas0.usuarios[usuarioTransferidor].millasRecibidas,\\  
+					& millasTransferidas: \\ 
+					& concat(aerolíneas0.usuarios[usuarioTransferidor].millasTransferidas, \\
+					& \langle receptor: usuarioReceptor, millas: millasATransferir \rangle) \rangle)
+					\ \land \\ 
+					& aerolínea.promos = aerolínea0.promos \ \land \\
+					& aerolínea.promosConTope = aerolínea0.promosConTope 
+			\end{aligned}}
+		\end{proc}
+		
+		
+		\aux{agregarTransferenciaRecibida}
+		{usuarios: \Tipo{Usuarios}, usuarioTransferidor: \Tipo{Usuario}, \\usuarioReceptor: \Tipo{Usuario}, millasATransferir: Millas}{\Tipo{Usuarios}}
+		
+		{
+			{\begin{aligned}   
+					& setKey(usuarios, usuarioReceptor, \langle vuelos: usuarios[usuarioReceptor].vuelos, \\ 
+					& millasGanadas: usuarios[usuarioReceptor].millasGanadas, \\ 
+					& millasCanjeadas: usuarios[usuarioReceptor].millasCanjeadas, \\  
+					& millasRecibidas: concat(usuarios[usuarioReceptor].millasRecibidas, \\
+					& \langle transferidor: usuarioTransferidor, millas: millasATransferir \rangle) \rangle) \\
+					& millasTransferidas: usuarios[usuarioReceptor].millasTransferidas,\\
+			\end{aligned}}\\\\}
+		
+		
+		\begin{proc}{consultarSaldo}
+			{\Inout aerolínea: \Tipo{AirMiles}, \In usuario: \Tipo{Usuario}}{\Tipo{Millas}}{}
+			\requiere{usuario \in aerolínea.usuarios}
+			\asegura{ res = millasDisponibles(aerolínea.usuarios[usuario])}
+		\end{proc}
 		
 		\begin{proc}{rankingMillas}
 			{\In aerolinea: \AirMiles, \in cantidad: \Z}{\seq<\usuario>}
